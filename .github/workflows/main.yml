@@ -1,7 +1,7 @@
-# name: Docker PostGIS CI
+# name: Docker PostGIS CI  # @TODO - restore this section and remove its replacement below
 name: 'amd64 + arm64'
 
-# on:
+# on:  # @TODO - restore this section and remove its replacement below
 #   push:
 #   pull_request:
 #   schedule:
@@ -19,7 +19,7 @@ jobs:
       fail-fast: false  # @TODO - delete before any PRs
       matrix:
         postgres: [9.6, 10, 11, 12, 13, 14]
-        # postgis: ['2.5', '3.2']
+        # postgis: ['2.5', '3.2']  # @TODO - limit '2.5' to amd64
         postgis: ['3.2']
         variant: [default, alpine]
         exclude:
