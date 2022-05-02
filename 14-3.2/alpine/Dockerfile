@@ -41,9 +41,10 @@ RUN set -eux \
             set -eux ; \
             echo ".... unknown \$POSTGIS_VERSION ...." ; \
             exit 1 ; \
-        fi \
+        fi
+RUN set -eux \
     \
-    && apk add --no-cache --virtual .fetch-deps \
+    &&  apk add --no-cache --virtual .fetch-deps \
         ca-certificates \
         openssl \
         tar \
@@ -56,13 +57,14 @@ RUN set -eux \
         --file postgis.tar.gz \
         --directory /usr/src/postgis \
         --strip-components 1 \
-    && rm postgis.tar.gz \
+    && rm postgis.tar.gz
+RUN set -eux \
     \
-    && apk add --no-cache --virtual .build-deps \
+    &&  apk add --no-cache --virtual .build-deps \
         \
-        gdal-dev~=${GDAL_ALPINE_VER} \
-        geos-dev~=${GEOS_ALPINE_VER} \
-        proj-dev~=${PROJ_ALPINE_VER} \
+        gdal-dev~=3.4 \
+        geos-dev~=3.10 \
+        proj-dev~=8.2 \
         \
         autoconf \
         automake \
@@ -78,9 +80,8 @@ RUN set -eux \
         make \
         pcre-dev \
         perl \
-        protobuf-c-dev \
-    \
-# build PostGIS
+        protobuf-c-dev
+RUN set -eux \
     \
     && cd /usr/src/postgis \
     && gettextize \
@@ -88,42 +89,46 @@ RUN set -eux \
     && ./configure \
         --with-pcredir="$(pcre-config --prefix)" \
     && make -j$(nproc) \
-    && make install \
+    && make install
+RUN set -eux \
     \
-# regress check
+    && cd /usr/src/postgis \
     && mkdir /tempdb \
     && chown -R postgres:postgres /tempdb \
     && su postgres -c 'pg_ctl -D /tempdb init' \
     && su postgres -c 'pg_ctl -D /tempdb start' \
     && cd regress \
-    && make -j$(nproc) check RUNTESTFLAGS=--extension   PGUSER=postgres \
-    #&& make -j$(nproc) check RUNTESTFLAGS=--dumprestore PGUSER=postgres \
-    #&& make garden                                      PGUSER=postgres \
+    && make -j$(nproc) check RUNTESTFLAGS=--extension   PGUSER=postgres
+RUN set -eux \
     \
+    && cd /usr/src/postgis/regress \
     && su postgres -c 'psql    -c "CREATE EXTENSION IF NOT EXISTS postgis;"' \
     && su postgres -c 'psql -t -c "SELECT version();"'              >> /_pgis_full_version.txt \
     && su postgres -c 'psql -t -c "SELECT PostGIS_Full_Version();"' >> /_pgis_full_version.txt \
     \
     && su postgres -c 'pg_ctl -D /tempdb --mode=immediate stop' \
     && rm -rf /tempdb \
-    && rm -rf /tmp/pgis_reg \
-# add .postgis-rundeps
-    && apk add --no-cache --virtual .postgis-rundeps \
+    && rm -rf /tmp/pgis_reg
+RUN set -eux \
+    \
+    &&  apk add --no-cache --virtual .postgis-rundeps \
         \
-        gdal~=${GDAL_ALPINE_VER} \
-        geos~=${GEOS_ALPINE_VER} \
-        proj~=${PROJ_ALPINE_VER} \
+        gdal~=3.4 \
+        geos~=3.10 \
+        proj~=8.2 \
         \
         json-c \
         libstdc++ \
         pcre \
-        protobuf-c \
-# clean
+        protobuf-c
+RUN set -eux \
+    \
     && cd / \
     && rm -rf /usr/src/postgis \
-    && apk del .fetch-deps .build-deps \
-# print PostGIS_Full_Version() for the log. ( experimental & internal )
-    && cat /_pgis_full_version.txt
+    && apk del .fetch-deps .build-deps
+RUN set -eux \
+    \
+    &&  cat /_pgis_full_version.txt
 
 COPY ./initdb-postgis.sh /docker-entrypoint-initdb.d/10_postgis.sh
 COPY ./update-postgis.sh /usr/local/bin
