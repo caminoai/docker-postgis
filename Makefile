@@ -76,12 +76,12 @@ update:
 define build-version
 build-$1:
 ifeq ($(do_default),true)
-	$(DOCKER) buildx build --platform linux/amd64,linux/arm64 --pull --tag $(REPO_NAME)/$(IMAGE_NAME):$(shell echo $1) $1
+	$(DOCKER) buildx build --platform linux/amd64,linux/arm64 --pull --cache-from=type=gha --cache-to=type=gha --tag $(REPO_NAME)/$(IMAGE_NAME):$(shell echo $1) $1
 	$(DOCKER) buildx build --output type=docker,dest=- --tag $(REPO_NAME)/$(IMAGE_NAME):$(shell echo $1) $1 | docker load
 endif
 ifeq ($(do_alpine),true)
 ifneq ("$(wildcard $1/alpine)","")
-	$(DOCKER) buildx build --platform linux/amd64,linux/arm64 --pull --tag $(REPO_NAME)/$(IMAGE_NAME):$(shell echo $1)-alpine $1/alpine
+	$(DOCKER) buildx build --platform linux/amd64,linux/arm64 --pull --cache-from=type=gha --cache-to=type=gha --tag $(REPO_NAME)/$(IMAGE_NAME):$(shell echo $1)-alpine $1/alpine
 	$(DOCKER) buildx build --output type=docker,dest=- --tag $(REPO_NAME)/$(IMAGE_NAME):$(shell echo $1)-alpine $1/alpine | docker load
 endif
 endif
