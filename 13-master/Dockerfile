@@ -219,100 +219,100 @@ RUN ogr2ogr --formats | grep -q "PostgreSQL/PostGIS" && exit 0 \
 ENV POSTGIS_VERSION master
 ENV POSTGIS_GIT_HASH 842dd8b50274bfec09ab7430a735764d85ce0a0d
 
-RUN set -ex \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-      autoconf \
-      automake \
-      autotools-dev \
-      bison \
-      build-essential \
-      ca-certificates \
-      cmake \
-      g++ \
-      git \
-      libboost-all-dev \
-      libcgal-dev \
-      libcurl4-gnutls-dev \
-      libgmp-dev \
-      libjson-c-dev \
-      libmpfr-dev \
-      libpcre3-dev \
-      libprotobuf-c-dev \
-      libsqlite3-dev \
-      libtiff-dev \
-      libtool \
-      libxml2-dev \
-      make \
-      pkg-config \
-      postgresql-server-dev-$PG_MAJOR \
-      protobuf-c-compiler \
-      xsltproc \
-    && cd \
-    # postgis
-    && cd /usr/src/ \
-    && git clone https://github.com/postgis/postgis.git \
-    && cd postgis \
-    && git checkout ${POSTGIS_GIT_HASH} \
-    && ./autogen.sh \
-# configure options taken from:
-# https://anonscm.debian.org/cgit/pkg-grass/postgis.git/tree/debian/rules?h=jessie
-    && ./configure \
-#       --with-gui \
-        --with-pcredir="$(pcre-config --prefix)" \
-    && make -j$(nproc) \
-    && make install \
-# regress check
-    && mkdir /tempdb \
-    && chown -R postgres:postgres /tempdb \
-    && su postgres -c 'pg_ctl -D /tempdb init' \
-    && su postgres -c 'pg_ctl -D /tempdb start' \
-    && ldconfig \
-    && cd regress \
-    && make -j$(nproc) check RUNTESTFLAGS=--extension PGUSER=postgres \
-    \
-    && su postgres -c 'psql    -c "CREATE EXTENSION IF NOT EXISTS postgis;"' \
-    && su postgres -c 'psql -t -c "SELECT version();"' >> /_pgis_full_version.txt \
-    && su postgres -c 'psql -t -c "SELECT PostGIS_Full_Version();"' >> /_pgis_full_version.txt \
-    \
-    && su postgres -c 'pg_ctl -D /tempdb --mode=immediate stop' \
-    && rm -rf /tempdb \
-    && rm -rf /tmp/pgis_reg \
-# clean
-    && cd / \
-    && rm -rf /usr/src/postgis \
-    && apt-get purge -y --autoremove \
-      autoconf \
-      automake \
-      autotools-dev \
-      bison \
-      build-essential \
-      ca-certificates \
-      cmake \
-      g++ \
-      git \
-      libboost-all-dev \
-      libcgal-dev \
-      libcurl4-gnutls-dev \
-      libgmp-dev \
-      libjson-c-dev \
-      libmpfr-dev \
-      libpcre3-dev \
-      libprotobuf-c-dev \
-      libsqlite3-dev \
-      libtiff-dev \
-      libtool \
-      libxml2-dev \
-      make \
-      pkg-config \
-      postgresql-server-dev-$PG_MAJOR \
-      protobuf-c-compiler \
-      xsltproc \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# RUN set -ex \
+#     && apt-get update \
+#     && apt-get install -y --no-install-recommends \
+#       autoconf \
+#       automake \
+#       autotools-dev \
+#       bison \
+#       build-essential \
+#       ca-certificates \
+#       cmake \
+#       g++ \
+#       git \
+#       libboost-all-dev \
+#       libcgal-dev \
+#       libcurl4-gnutls-dev \
+#       libgmp-dev \
+#       libjson-c-dev \
+#       libmpfr-dev \
+#       libpcre3-dev \
+#       libprotobuf-c-dev \
+#       libsqlite3-dev \
+#       libtiff-dev \
+#       libtool \
+#       libxml2-dev \
+#       make \
+#       pkg-config \
+#       postgresql-server-dev-$PG_MAJOR \
+#       protobuf-c-compiler \
+#       xsltproc \
+#     && cd \
+#     # postgis
+#     && cd /usr/src/ \
+#     && git clone https://github.com/postgis/postgis.git \
+#     && cd postgis \
+#     && git checkout ${POSTGIS_GIT_HASH} \
+#     && ./autogen.sh \
+# # configure options taken from:
+# # https://anonscm.debian.org/cgit/pkg-grass/postgis.git/tree/debian/rules?h=jessie
+#     && ./configure \
+# #       --with-gui \
+#         --with-pcredir="$(pcre-config --prefix)" \
+#     && make -j$(nproc) \
+#     && make install \
+# # regress check
+#     && mkdir /tempdb \
+#     && chown -R postgres:postgres /tempdb \
+#     && su postgres -c 'pg_ctl -D /tempdb init' \
+#     && su postgres -c 'pg_ctl -D /tempdb start' \
+#     && ldconfig \
+#     && cd regress \
+#     && make -j$(nproc) check RUNTESTFLAGS=--extension PGUSER=postgres \
+#     \
+#     && su postgres -c 'psql    -c "CREATE EXTENSION IF NOT EXISTS postgis;"' \
+#     && su postgres -c 'psql -t -c "SELECT version();"' >> /_pgis_full_version.txt \
+#     && su postgres -c 'psql -t -c "SELECT PostGIS_Full_Version();"' >> /_pgis_full_version.txt \
+#     \
+#     && su postgres -c 'pg_ctl -D /tempdb --mode=immediate stop' \
+#     && rm -rf /tempdb \
+#     && rm -rf /tmp/pgis_reg \
+# # clean
+#     && cd / \
+#     && rm -rf /usr/src/postgis \
+#     && apt-get purge -y --autoremove \
+#       autoconf \
+#       automake \
+#       autotools-dev \
+#       bison \
+#       build-essential \
+#       ca-certificates \
+#       cmake \
+#       g++ \
+#       git \
+#       libboost-all-dev \
+#       libcgal-dev \
+#       libcurl4-gnutls-dev \
+#       libgmp-dev \
+#       libjson-c-dev \
+#       libmpfr-dev \
+#       libpcre3-dev \
+#       libprotobuf-c-dev \
+#       libsqlite3-dev \
+#       libtiff-dev \
+#       libtool \
+#       libxml2-dev \
+#       make \
+#       pkg-config \
+#       postgresql-server-dev-$PG_MAJOR \
+#       protobuf-c-compiler \
+#       xsltproc \
+#     && apt-get clean \
+#     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /docker-entrypoint-initdb.d
 COPY ./initdb-postgis.sh /docker-entrypoint-initdb.d/10_postgis.sh
 COPY ./update-postgis.sh /usr/local/bin
-RUN cat /_pgis_full_version.txt
+# RUN cat /_pgis_full_version.txt
 
